@@ -1,1 +1,128 @@
+---
 
+title: "lab5"
+author: "Matt Kohane"
+date: "October 25, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+Part 1
+```{r}
+
+library(tidyverse)
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+
+accidents = read.csv("accident.csv")
+person = read.csv("person.csv")
+vehicle = read.csv("vehicle.csv")
+
+accidents
+accidents %>% head()
+
+nrow(accidents)
+
+ncol(accidents)
+
+summary(accidents)
+
+
+acc1 <- filter(accidents, accidents$DAY_WEEK == 1)
+nrow(acc1) ##5303 rows, so there were 5303 accounts at day 1 Sunday
+
+acc2 <- filter(accidents, accidents$DAY_WEEK == 2)
+nrow(acc2) ## 4501 rows, so there were 4501 accounts at day 2 Monday
+
+acc3 <- filter(accidents, accidents$DAY_WEEK == 3)
+nrow(acc3) ## 4219 rows, so there were 4219 accounts at day 3 Tuesday
+
+acc4 <- filter(accidents, accidents$DAY_WEEK == 4)
+nrow(acc4) ## 4388 rows, so there were 4388 accounts at day 4 Wednesday
+
+acc5 <- filter(accidents, accidents$DAY_WEEK == 5)
+nrow(acc5) ## 4662 rows, so there were 4662 accounts at day 5 Thursday
+
+acc6 <- filter(accidents, accidents$DAY_WEEK == 6)
+nrow(acc6) ## 5352 rows, so there were 5352 accounts at day 6 Friday
+
+acc7 <- filter(accidents, accidents$DAY_WEEK == 7)
+nrow(acc7) ## 6104 rows, so there were 6104 accounts at day 7 Saturday
+
+
+## The most amount of accidents occurred on day 7 or Saturday.
+
+## The below code is an easier way to filter the above code.  The results are congruent.
+
+daySum = accidents %>% group_by(DAY_WEEK) %>% summarize(n = n())
+
+##Sum 
+daySum
+
+accidents %>% ggplot(aes(x = DAY_WEEK)) + geom_bar() + xlab("day")
+
+accidentSum = accidents %>% filter(HOUR<=24) %>% group_by(HOUR) %>% summarize(n = n())
+## The most amount of accidents happens at 6PM, this makes sense due to the amount of traffic that occurrs during those times.
+
+accidentSum %>% ggplot(aes(x= HOUR, y = n)) + geom_col()
+##Visualization of this trend
+
+drunkSum = accidents %>% group_by(DRUNK_DR) %>% summarize(n = n())
+## The number of accidents with atleast 1 drunk driver is 8720.
+
+sum(drunkSum$n[c(2:4)])
+
+
+```
+
+
+
+Part 2
+```{r}
+
+person %>% head()
+
+joined = inner_join(person, accidents, by ="ST_CASE")
+
+p1 = joined %>% filter(PER_TYP == 1)
+
+p1 %>% head()
+```
+
+```{r}
+##Sums the days based on accidents
+sumOfDay = p1 %>% group_by(DAY_WEEK) %>% summarize(n = n())
+sumOfDay
+
+##Sums the hours of the day based on accidents
+sumOfHour = p1 %>% group_by(HOUR.y) %>% summarize(n = n())
+sumOfHour
+
+
+##Sums the number of accidents based on gender
+sumOfGender = p1 %>% filter(SEX < 3) %>% group_by(SEX) %>% summarize(n = n())
+sumOfGender
+
+##An overall sum of all variables
+OverallSum = p1 %>% group_by(DAY_WEEK, HOUR.y,SEX) %>% summarize(n = n())
+OverallSum
+
+##A plot showing the accidents per day
+sumOfDay %>% ggplot(aes(x = DAY_WEEK, y = n)) + geom_col()
+
+##A plot showing the accidents varied by the hours of the day
+sumOfHour %>% filter(HOUR.y < 25) %>% ggplot(aes(x = HOUR.y, y = n)) + geom_col()
+
+##A simple column chart showing the number of accidents per gender
+sumOfGender %>% ggplot(aes(x = SEX, y = n,fill = as.factor(SEX))) + geom_col() + ylab("count")
+
+
+
+```
